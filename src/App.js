@@ -1,15 +1,14 @@
 import './App.scss';
 import requests from './requests';
-import instance from './axios';
 import Row from './components/Row';
 import Banner from './components/Banner';
+import Nav from './components/Nav';
 
 function App() {
 	return (
 		<div className="App">
-			{/* Nav */}
+			<Nav />
 			<Banner />
-			{/* Banner */}
 			<Row
 				title="NETFLIX ORIGINALS"
 				fetchUrl={requests.fetchNetflixOriginals}

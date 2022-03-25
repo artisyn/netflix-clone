@@ -2,11 +2,14 @@ import React from 'react';
 import { useState, useEffect } from 'react';
 import axios from '../axios';
 import '../components/row.scss';
+import YouTube from 'react-youtube';
+import movieTrailer from 'movie-trailer';
 
 const base__url = 'https://image.tmdb.org/t/p/original/';
 
 function Row({ title, fetchUrl, isLargeRow }) {
 	const [movies, setMovies] = useState([]);
+	const [trailerUrl, setTrailerUrl] = useState('');
 	const x = 11;
 
 	// A snippet of code which runs based on a specific condition/variable
@@ -22,6 +25,27 @@ function Row({ title, fetchUrl, isLargeRow }) {
 		fetchData();
 	}, [fetchUrl]);
 
+	const opts = {
+		height: '390',
+		width: '100%',
+		playerVars: {
+			autoplay: 1,
+		},
+	};
+
+	const handleClick = (movie) => {
+		if (trailerUrl) setTrailerUrl('');
+
+		if (!trailerUrl) {
+			movieTrailer(movie?.name || '')
+				.then((url) => {
+					const urlParams = new URLSearchParams(new URL(url).search);
+					urlParams.get('v');
+				})
+				.catch((error) => console.log(error));
+		}
+	};
+
 	return (
 		<div className="row">
 			<h2>{title}</h2>
@@ -30,6 +54,7 @@ function Row({ title, fetchUrl, isLargeRow }) {
 				{movies.map((movie) => (
 					<img
 						key={movie.id}
+						onClick={() => handleClick(movie)}
 						className={`row__poster ${
 							isLargeRow && 'row__posterLarge'
 						}`}
@@ -46,6 +71,7 @@ function Row({ title, fetchUrl, isLargeRow }) {
 					/>
 				))}
 			</div>
+			{trailerUrl && <YouTube videoId={trailerUrl} opts={opts} />}
 		</div>
 	);
 }
