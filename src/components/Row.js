@@ -3,23 +3,22 @@ import { useState, useEffect } from 'react';
 import axios from '../axios';
 import '../components/row.scss';
 import YouTube from 'react-youtube';
-import movieTrailer from 'movie-trailer';
 
 const base__url = 'https://image.tmdb.org/t/p/original/';
 
 function Row({ title, fetchUrl, isLargeRow }) {
 	const [movies, setMovies] = useState([]);
 	const [trailerUrl, setTrailerUrl] = useState('');
-	const x = 11;
+	const [selectedMovie, setSelectedMovie] = useState('');
 
 	// A snippet of code which runs based on a specific condition/variable
 
 	useEffect(() => {
 		async function fetchData() {
 			const request = await axios.get(fetchUrl);
-			console.log(request);
+			// console.log(request);
 			setMovies(request.data.results);
-			console.log(movies);
+			// console.log(movies);
 			return request;
 		}
 		fetchData();
@@ -34,20 +33,51 @@ function Row({ title, fetchUrl, isLargeRow }) {
 	};
 
 	const handleClick = (movie) => {
-		console.log('l');
-		if (trailerUrl) setTrailerUrl('');
-
-		if (!trailerUrl) {
-			movieTrailer(
-				movie?.name || movie?.title || movie?.original_title || ''
-			)
-				.then((url) => {
-					const urlParams = new URLSearchParams(new URL(url).search);
-					setTrailerUrl(urlParams.get('v'));
-				})
-				.catch((error) => console.log(error));
+		if (selectedMovie === movie) {
+			setSelectedMovie('');
+			console.log('already selected');
+			setTrailerUrl('');
+			return;
 		}
+
+		setSelectedMovie(movie);
 	};
+	useEffect(() => {
+		if (selectedMovie === '') return;
+		console.log(selectedMovie);
+
+		const getMoviebyId = async (id) => {
+			const request1 = await axios.get(
+				`movie/${id}?api_key=81b5ac86648fd04fe0a5696982f88fc4&append_to_response=videos`
+			);
+			if (request1.status === 200) {
+				// console.log(request1);
+				const { videos } = request1.data;
+				const trailer = videos.results.filter(
+					(video) => video.type === 'Trailer'
+				);
+				if (trailer.length === 0) return;
+				setTrailerUrl(trailer[0].key);
+				return;
+			}
+
+			const request2 = await axios.get(
+				`tv/${id}?api_key=81b5ac86648fd04fe0a5696982f88fc4&append_to_response=videos`
+			);
+			if (request2.status === 200) {
+				const { videos } = request2.data;
+				const trailer = videos.results.filter(
+					(video) => video.type === 'Trailer'
+				);
+				if (trailer.length === 0) return;
+				setTrailerUrl(trailer[0].key);
+				return;
+			}
+		};
+
+		const id = selectedMovie.id;
+		getMoviebyId(id);
+	}, [selectedMovie]);
 
 	return (
 		<div className="row">

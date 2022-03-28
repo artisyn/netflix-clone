@@ -18,7 +18,7 @@ function Banner() {
 			const randMovie = request.data.results.map((el) => {
 				if (el.backdrop_path) return el;
 			})[Math.floor(Math.random() * request.data.results.length)];
-			console.log(randMovie);
+			// console.log(randMovie);
 			setMovie(randMovie);
 		}
 
